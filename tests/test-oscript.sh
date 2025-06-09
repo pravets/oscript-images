@@ -3,7 +3,8 @@ set -e
 
 if [ -z "${CI-}" ]; then
   echo "The script is not running in CI"
-  source .env
+  SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  source "${SCRIPT_DIR}/../.env"
 else
   echo "The script is running in CI"
 fi
