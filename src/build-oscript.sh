@@ -18,7 +18,7 @@ then
 fi
 
 last_arg="."
-if [[ $NO_CACHE = "true" ]] ; then
+if [[ ${NO_CACHE:-} = "true" ]] ; then
 	last_arg="--no-cache ."
 fi
 
