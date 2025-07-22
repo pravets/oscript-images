@@ -29,6 +29,7 @@ jobs:
       - name: Set environment variables
         run: |
           echo "DOCKER_REGISTRY_URL=${{ secrets.DOCKER_REGISTRY_URL }}" >> "$GITHUB_ENV"
+          echo "DOCKER_REGISTRY_URL=${{ secrets.DOCKER_LOGIN }}" >> "$GITHUB_ENV"
 
       - name: Build and Push Docker image
         run: |
