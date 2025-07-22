@@ -27,6 +27,7 @@ yard_version="latest"
 docker build \
     --pull \
     --build-arg YARD_VERSION="${yard_version}" \
+    --build-arg DOCKER_REGISTRY_URL="${DOCKER_REGISTRY_URL}" \
     -t "${DOCKER_REGISTRY_URL}/${DOCKER_LOGIN}/yard:${yard_version}" \
     -f "${SCRIPT_DIR}/yard/Dockerfile" \
     ${last_arg}
