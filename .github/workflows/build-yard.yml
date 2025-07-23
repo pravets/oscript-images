@@ -1,0 +1,26 @@
+name: Build yard Docker Image
+
+on:
+  push:
+    tags:
+      - 'yard'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      DOCKER_REGISTRY_URL: ${{ secrets.DOCKER_REGISTRY_URL }}
+      DOCKER_LOGIN: ${{ secrets.DOCKER_LOGIN }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and Push Docker image
+        run: |
+            echo "Собираем yard"
+            ./src/build-yard.sh
