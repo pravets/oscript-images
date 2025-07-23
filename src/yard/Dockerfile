@@ -6,6 +6,13 @@ ARG BASE_TAG=dev
 FROM ${DOCKER_REGISTRY_URL}/${DOCKER_LOGIN}/${BASE_IMAGE}:${BASE_TAG}
 LABEL maintainer="Iosif Pravets <i@pravets.ru>"
 
-RUN opm i yard
+RUN apt update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
+        p7zip-rar \
+        p7zip-full \
+    && opm i yard \
+    && rm -rf  \
+        /var/lib/apt/lists/* \
+        /var/cache/debconf
 
 ENTRYPOINT ["yard"]
