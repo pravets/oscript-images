@@ -9,6 +9,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
+      DOCKER_REGISTRY_URL: ${{ secrets.DOCKER_REGISTRY_URL }}
       DOCKER_LOGIN: ${{ secrets.DOCKER_LOGIN }}
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
@@ -18,11 +19,6 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-
-      - name: Set environment variables
-        run: |
-          echo "DOCKER_REGISTRY_URL=${{ secrets.DOCKER_REGISTRY_URL }}" >> "$GITHUB_ENV"
-          echo "DOCKER_LOGIN=${{ secrets.DOCKER_LOGIN }}" >> "$GITHUB_ENV"
 
       - name: Build and Push Docker image
         run: |
