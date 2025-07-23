@@ -34,7 +34,7 @@ docker build \
     ${last_arg}
 
 if ./tests/test-yard.sh; then
-    container_version=$(docker run --rm  "${DOCKER_REGISTRY_URL}/${DOCKER_LOGIN}/yard:${yard_version}" -v | tail -n1)
+    container_version=$(docker run --rm  "${DOCKER_REGISTRY_URL}/${DOCKER_LOGIN}/yard:${yard_version}" --version | tail -n1)
 
     if [[ -n "${container_version}" ]]; then
         docker push "${DOCKER_REGISTRY_URL}/${DOCKER_LOGIN}/yard:${yard_version}"
