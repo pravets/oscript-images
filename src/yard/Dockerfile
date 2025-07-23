@@ -6,13 +6,13 @@ ARG BASE_TAG=dev
 FROM ${DOCKER_REGISTRY_URL}/${DOCKER_LOGIN}/${BASE_IMAGE}:${BASE_TAG}
 LABEL maintainer="Iosif Pravets <i@pravets.ru>"
 
-RUN apt update \
-    && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
+RUN set -e; \
+    apt-get update -qq; \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         p7zip-rar \
-        p7zip-full \
-    && opm i yard \
-    && rm -rf  \
-        /var/lib/apt/lists/* \
-        /var/cache/debconf
+        p7zip-full; \
+    opm i yard; \
+    apt-get clean; \
+    rm -rf /var/lib/apt/lists/* /var/cache/debconf
 
 ENTRYPOINT ["yard"]

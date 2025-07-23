@@ -1,7 +1,7 @@
 # oscript-images
 Всё для сборки Docker-образов движка [OneScript](https://oscript.io/) и некоторых утилит на OneScript
 
-Сборка происходит в Github Actions, чтобы максимально снизить порог входа и упростить вашу жизнь. 
+Сборка происходит в GitHub Actions, чтобы максимально снизить порог входа и упростить вашу жизнь. 
 
 Необходимо выполнить [подготовительные шаги](#подготовительные-шаги) и шаги сборки требуемых вам утилит.
 
@@ -21,8 +21,8 @@
 1. **Добавьте секреты для Docker Hub**
    - В настройках репозитория (Settings → Secrets and variables → Actions) добавьте переменные:
      - `DOCKER_REGISTRY_URL` — адрес реестра (например, `docker.io`)
-     - `DOCKER_LOGIN` — ваш логин Docker Hub
-     - `DOCKER_PASSWORD` — ваш пароль или токен Docker Hub
+     - `DOCKER_LOGIN` — ваш логин Docker Hub или в вашем приватном registry
+     - `DOCKER_PASSWORD` — ваш пароль от вашего приватного registry или [токен Docker Hub](https://app.docker.com/settings/personal-access-tokens). Для Docker Hub нужны права Read и Write и рекомендуется использовать токен, вместо пароля.
 
     [↑ В начало](#oscript-images)
 

@@ -43,13 +43,13 @@ if ./tests/test-yard.sh; then
         docker push "${DOCKER_REGISTRY_URL}/${DOCKER_LOGIN}/yard:${container_version}"
 
     else
-        echo "Не удалось получить версию из контейнера"
+        log_failure "Не удалось получить версию из контейнера"
         exit 1
     fi
 
     source "${SCRIPT_DIR}/../scripts/cleanup.sh"
 else
-    log_failure "ERROR: Tests failed. Docker image will not be pushed."
+    log_failure "ERROR: Тесты провалены. Образ не был запушен."
     source "${SCRIPT_DIR}/../scripts/cleanup.sh"
     exit 1
 fi
