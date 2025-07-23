@@ -18,10 +18,11 @@ test_yard_is_running() {
   log_header "Test :: yard is running"
 
   local expected actual
-  expected="ИНФОРМАЦИЯ - [СписокРелизов1С]: Инициализирован обработчик"
-  actual=$(docker run --rm $DOCKER_REGISTRY_URL/${DOCKER_LOGIN}/yard:$YARD_VERSION)
 
-  if assert_contain "$actual" "$expected"; then
+  expected="ИНФОРМАЦИЯ - [СписокРелизов1С]: Инициализирован обработчик"
+  actual=$(docker run --rm ${DOCKER_REGISTRY_URL}/${DOCKER_LOGIN}/yard:latest 2>/dev/null | head -n1)
+
+  if assert_eq "$actual" "$expected"; then
     log_success "yard is running test passed"
   else
     log_failure "yard is running test failed"
