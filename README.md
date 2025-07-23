@@ -34,7 +34,7 @@
    - Перейдите во вкладку "Tags" или используйте команду:
      ```bash
      git tag yard
-     git push origin --tags
+     git push origin yard
      ```
 
    - либо клонируйте репозиторий к себе на Linux-хост (или используйте GitHub Codespaces) и запустите скрипт `./src/tag-yard-latest.sh` — он принудительно «перевесит» тег на последний коммит и запушит теги
