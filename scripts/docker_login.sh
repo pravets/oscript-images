@@ -7,8 +7,6 @@ if [[ -z "$DOCKER_REGISTRY_URL" || -z "$DOCKER_LOGIN" || -z "$DOCKER_PASSWORD" ]
 fi
 
 echo "Авторизуемся в $DOCKER_REGISTRY_URL"
-
-curl https://docker.io
 echo "$DOCKER_PASSWORD" | docker login "$DOCKER_REGISTRY_URL" -u "$DOCKER_LOGIN" --password-stdin
 
 if [[ $? -eq 0 ]]; then
