@@ -34,6 +34,8 @@
 
 [![Docker Pulls](https://img.shields.io/docker/pulls/sleemp/onec-installer-downloader)](https://hub.docker.com/r/sleemp/yard)
 
+Готовые собранные образы можно взять в [sleemp/yard](https://hub.docker.com/r/sleemp/yard)
+
 1. [**Выполните подготовительные шаги**](#подготовительные-шаги), если не сделали это ранее
 
 1. **Добавьте тег `yard`**
