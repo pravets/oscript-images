@@ -37,12 +37,12 @@ if ./tests/test-oscript.sh; then
     if [[ -n "${container_version}" ]]; then
         docker push "${DOCKER_REGISTRY_URL}/${DOCKER_LOGIN}/oscript:${oscript_version}"
 
+        container_version="$(echo "$container_version" | sed 's/+/_/g')"
         docker tag "${DOCKER_REGISTRY_URL}/${DOCKER_LOGIN}/oscript:${oscript_version}" "${DOCKER_REGISTRY_URL}/${DOCKER_LOGIN}/oscript:${container_version}"
         docker push "${DOCKER_REGISTRY_URL}/${DOCKER_LOGIN}/oscript:${container_version}"
 
         if ! [[ "${oscript_version}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] && ! [[ "${container_version}" =~ rc ]]; then
             semver_tag=$(echo "${container_version}" | awk -F. '{print $1"."$2"."$3}')
-            semver_tag="$(echo "$semver_tag" | sed 's/+/_/g')"
             if [[ -n "${semver_tag}" ]]; then
                 docker tag "${DOCKER_REGISTRY_URL}/${DOCKER_LOGIN}/oscript:${oscript_version}" "${DOCKER_REGISTRY_URL}/${DOCKER_LOGIN}/oscript:${semver_tag}"
                 docker push "${DOCKER_REGISTRY_URL}/${DOCKER_LOGIN}/oscript:${semver_tag}"
