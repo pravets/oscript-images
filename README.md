@@ -68,19 +68,19 @@
 1. **Добавьте тег `yard`**
    - Перейдите во вкладку "Tags" или используйте команду:
      ```bash
-     git tag onec-installer-downloder_НомерВерсии
-     git push origin onec-installer-downloder_НомерВерсии
+     git tag onec-installer-downloader_НомерВерсии
+     git push origin onec-installer-downloader_НомерВерсии
      ```
    - `НомерВерсии` предлагается использовать вида `ГодМесяцДень`
    - либо клонируйте репозиторий к себе на Linux-хост (или используйте GitHub Codespaces) и запустите скрипт `./src/tag-yard-latest.sh` — он принудительно создаст тег с текущей датой на последний коммит и запушит его
    - Это необходимо для запуска сборки через GitHub Actions.
 
 1. **Запустите сборку**
-   - После пуша тега workflow автоматически соберёт и опубликует образ `onec-installer-downloder` в ваш Docker Registry.
+   - После пуша тега workflow автоматически соберёт и опубликует образ `onec-installer-downloader` в ваш Docker Registry.
    - будет опубликован образ с тегом `НомерВерсии`, а также с тегом `latest`
 
 1. **Проверьте результат**
-   - Убедитесь, что образ появился в вашем Docker Registry с именем `onec-installer-downloder` и соответствующей версией.
+   - Убедитесь, что образ появился в вашем Docker Registry с именем `onec-installer-downloader` и соответствующей версией.
 
 ### Использование
 
