@@ -61,6 +61,8 @@
 
 [![Docker Pulls](https://img.shields.io/docker/pulls/sleemp/onec-installer-downloader)](https://hub.docker.com/r/sleemp/onec-installer-downloader)
 
+Готовые собранные образы можно взять в [sleemp/onec-installer-downloader](https://hub.docker.com/r/sleemp/onec-installer-downloader)
+
 ### Назначение
 
 Образ предназначен для загрузки Linux-версий дистрибутивов платформы `1С:Предприятие` и `EDT`. Основная задача - скачивание дистрибутивов для целей сборки Docker-образов с платформой и EDT.
