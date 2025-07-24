@@ -3,7 +3,7 @@ name: Build yard Docker Image
 on:
   push:
     tags:
-      - 'yard'
+      - 'yard' # реагировать на тег yard
 
 jobs:
   build:
@@ -22,5 +22,5 @@ jobs:
 
       - name: Build and Push Docker image
         run: |
-            echo "Собираем yard"
-            ./src/build-yard.sh
+          echo "Собираем yard"
+          ./src/build-yard.sh
