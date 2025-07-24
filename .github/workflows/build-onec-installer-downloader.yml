@@ -23,5 +23,5 @@ jobs:
       - name: Build and Push Docker image
         run: |
           export ONEC_INSTALLER_DOWNLOADER_VERSION="${GITHUB_REF#refs/tags/onec-installer-downloader_}"
-            echo "Собираем onec installer downloader версии ${ONEC_INSTALLER_DOWNLOADER_VERSION}"
-            ./src/build-onec-installer-downloader.sh
+          echo "Собираем onec installer downloader версии ${ONEC_INSTALLER_DOWNLOADER_VERSION}"
+          ./src/build-onec-installer-downloader.sh
