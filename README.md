@@ -1,8 +1,10 @@
 # oscript-images
 
+![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/pravets/oscript-images?utm_source=oss&utm_medium=github&utm_campaign=pravets%2Foscript-images&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)
+
 Всё для сборки Docker-образов движка [OneScript](https://oscript.io/) и некоторых утилит на OneScript
 
-Сборка происходит в GitHub Actions, чтобы максимально снизить порог входа и упростить вашу жизнь. 
+Сборка происходит в GitHub Actions, чтобы максимально снизить порог входа и упростить вашу жизнь. Основной сценарий предполагает отправку образов в ваш личный приватный или публичный registry. Можно развернуть свой registry или арендовать в облаке, например в Яндексе или cloud.ru. Если вы решите пойти по пути своего registry, то он должен поддерживать авторизацию и быть доступен во внешней сети.
 
 Необходимо выполнить [подготовительные шаги](#подготовительные-шаги) и шаги сборки требуемых вам утилит.
 
