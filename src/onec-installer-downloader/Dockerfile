@@ -8,6 +8,7 @@ LABEL maintainer="Iosif Pravets <i@pravets.ru>"
  
 WORKDIR /app
 COPY ./src/onec-installer-downloader/downloader.sh /app/downloader.sh
+RUN chmod +x /app/downloader.sh
 ENV PATH="/app:${PATH}"
 
 VOLUME [ "/tmp/downloads" ]

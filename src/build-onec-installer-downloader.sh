@@ -32,9 +32,9 @@ docker build \
     --build-arg DOCKER_LOGIN="${DOCKER_LOGIN}" \
     -t "${DOCKER_REGISTRY_URL}/${DOCKER_LOGIN}/${image_name}:${onec_installer_downloader_version}" \
     -f "${SCRIPT_DIR}/onec-installer-downloader/Dockerfile" \
-    ${last_arg} --debug
+    ${last_arg}
 
-if ./tests/test-onec-installer-downloader.sh; then  
+if ${SCRIPT_DIR}/../tests/test-onec-installer-downloader.sh; then  
     docker push "${DOCKER_REGISTRY_URL}/${DOCKER_LOGIN}/${image_name}:${onec_installer_downloader_version}"
 
     docker tag "${DOCKER_REGISTRY_URL}/${DOCKER_LOGIN}/${image_name}:${onec_installer_downloader_version}" "${DOCKER_REGISTRY_URL}/${DOCKER_LOGIN}/${image_name}:latest"
