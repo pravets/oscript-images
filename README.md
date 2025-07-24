@@ -103,7 +103,11 @@
 
 1. Итоговая команда запуска может выглядеть примерно так:
 ```shell
-docker run --rm -e YARD_RELEASES_USER=user -e YARD_RELEASES_PWD=password sleemp/onec-installer-downloader:20250723 thin-client32 8.3.25.1445
+docker run --rm \ 
+-e YARD_RELEASES_USER=user
+-e YARD_RELEASES_PWD=password \ 
+-v ./downloads:/tmp/downloads \
+sleemp/onec-installer-downloader:20250723 thin-client32 8.3.25.1445
 ```
 
    [↑ В начало](#oscript-images)
