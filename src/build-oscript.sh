@@ -37,6 +37,7 @@ if ./tests/test-oscript.sh; then
     if [[ -n "${container_version}" ]]; then
         docker push "${DOCKER_REGISTRY_URL}/${DOCKER_LOGIN}/oscript:${oscript_version}"
 
+        container_version="$(echo "$container_version" | sed 's/+/_/g')"
         docker tag "${DOCKER_REGISTRY_URL}/${DOCKER_LOGIN}/oscript:${oscript_version}" "${DOCKER_REGISTRY_URL}/${DOCKER_LOGIN}/oscript:${container_version}"
         docker push "${DOCKER_REGISTRY_URL}/${DOCKER_LOGIN}/oscript:${container_version}"
 
@@ -46,18 +47,18 @@ if ./tests/test-oscript.sh; then
                 docker tag "${DOCKER_REGISTRY_URL}/${DOCKER_LOGIN}/oscript:${oscript_version}" "${DOCKER_REGISTRY_URL}/${DOCKER_LOGIN}/oscript:${semver_tag}"
                 docker push "${DOCKER_REGISTRY_URL}/${DOCKER_LOGIN}/oscript:${semver_tag}"
             else
-                echo "Не удалось получить корректную semver версию из контейнера"
+                log_failure "Не удалось получить корректную semver версию из контейнера"
                 exit 1
             fi
         fi
 
     else
-        echo "Не удалось получить версию из контейнера"
+        log_failure "Не удалось получить версию из контейнера"
         exit 1
     fi
     source "${SCRIPT_DIR}/../scripts/cleanup.sh"
 else
-    log_failure "ERROR: Tests failed. Docker image will not be pushed."
+    log_failure "ERROR: Тесты провалены. Образ не был запушен."
     source "${SCRIPT_DIR}/../scripts/cleanup.sh"
     exit 1
 fi

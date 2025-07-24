@@ -1,7 +1,8 @@
 #!/bin/bash
 
-# Путь к .env файлу (по умолчанию в текущей директории)
-ENV_FILE=".env"
+# Путь к .env файлу
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ENV_FILE="$SCRIPT_DIR/.env"
 
 # Проверяем, существует ли файл
 if [ ! -f "$ENV_FILE" ]; then

@@ -3,7 +3,7 @@ name: Build onec installer downloader Docker Image
 on:
   push:
     tags:
-      - 'onec-installer-downloader_*'   # реагировать на теги, начинающиеся с executor_
+      - 'onec-installer-downloader_*'   # реагировать на теги, начинающиеся с onec-installer-downloader_
 
 jobs:
   build:
