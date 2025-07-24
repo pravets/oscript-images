@@ -1,4 +1,5 @@
 # oscript-images
+
 Всё для сборки Docker-образов движка [OneScript](https://oscript.io/) и некоторых утилит на OneScript
 
 Сборка происходит в GitHub Actions, чтобы максимально снизить порог входа и упростить вашу жизнь. 
@@ -10,6 +11,7 @@
 - [oscript-images](#oscript-images)
 - [Подготовительные шаги](#подготовительные-шаги)
 - [yard](#yard)
+- [onec-installer-downloader](#onec-installer-downloader)
 
 ## Подготовительные шаги
 
@@ -48,3 +50,60 @@
    - Убедитесь, что образ появился в вашем Docker Registry с именем `yard` и соответствующей версией.
 
     [↑ В начало](#oscript-images)
+
+## onec-installer-downloader
+
+[![Docker Pulls](https://img.shields.io/docker/pulls/sleemp/onec-installer-downloader)](https://hub.docker.com/r/sleemp/onec-installer-downloader)
+
+### Назначение
+
+Образ предназначен для загрузки Linux-версий дистрибутивов платформы `1С:Предприятие` и `EDT`. Основная задача - скачивание дистрибутивов для целей сборки Docker-образов с платформой и EDT.
+
+Образ основан на образе с [yard](#yard) и скрипте загрузки из [onec-docker](https://github.com/firstBitMarksistskaya/onec-docker)
+
+### Сборка
+
+1. [**Выполните подготовительные шаги**](#подготовительные-шаги), если не сделали это ранее
+
+1. **Добавьте тег `yard`**
+   - Перейдите во вкладку "Tags" или используйте команду:
+     ```bash
+     git tag onec-installer-downloder_НомерВерсии
+     git push origin onec-installer-downloder_НомерВерсии
+     ```
+   - `НомерВерсии` предлагается использовать вида `ГодМесяцДень`
+   - либо клонируйте репозиторий к себе на Linux-хост (или используйте GitHub Codespaces) и запустите скрипт `./src/tag-yard-latest.sh` — он принудительно создаст тег с текущей датой на последний коммит и запушит его
+   - Это необходимо для запуска сборки через GitHub Actions.
+
+1. **Запустите сборку**
+   - После пуша тега workflow автоматически соберёт и опубликует образ `onec-installer-downloder` в ваш Docker Registry.
+   - будет опубликован образ с тегом `НомерВерсии`, а также с тегом `latest`
+
+1. **Проверьте результат**
+   - Убедитесь, что образ появился в вашем Docker Registry с именем `onec-installer-downloder` и соответствующей версией.
+
+### Использование
+
+Для запуска образа необходимо учесть следующие моменты:
+
+1. Необходимо пробросить в контейнер переменные среды `YARD_RELEASES_USER` и `YARD_RELEASES_PWD`, необходимые `yard` для авторизации на сайте релизов 1С
+
+1. Также необходимо передать какой дистрибутив и версию нужно скачать, например `server 8.3.25.1445`. Список доступных дистрибутивов:
+   - edt
+   - server
+   - server32 
+   - client
+   - client32 
+   - thin-client
+   - thin-client32
+
+1. И, конечно, необходимо пробросить в контейнер каталог, в который будет загружен дистрибутив: `-v ./downloads:/tmp/downloads`.
+
+1. Дополнительно можно пробросить каталог `/distr` с загруженными архивами дистрибутивов
+
+1. Итоговая команда запуска может выглядеть примерно так:
+```shell
+docker run --rm -e YARD_RELEASES_USER=user -e YARD_RELEASES_PWD=password sleemp/onec-installer-downloader:20250723 thin-client32 8.3.25.1445
+```
+
+   [↑ В начало](#oscript-images)
