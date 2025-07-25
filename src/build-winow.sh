@@ -2,7 +2,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-if [ -z w"${CI:-}" ]; then
+if [ -z "${CI:-}" ]; then
     echo "The script is not running in CI"
     source "${SCRIPT_DIR}/../scripts/load_env.sh"	
 else
