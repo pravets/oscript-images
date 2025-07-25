@@ -1,6 +1,9 @@
 # oscript-images
 
 ![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/pravets/oscript-images?utm_source=oss&utm_medium=github&utm_campaign=pravets%2Foscript-images&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)
+![License](https://img.shields.io/github/license/pravets/oscript-images)
+[![Telegram](https://telegram-badge.vercel.app/api/telegram-badge?channelId=@pravets_IT)](https://t.me/pravets_it)
+
 
 Всё для сборки Docker-образов движка [OneScript](https://oscript.io/) и некоторых утилит на OneScript
 
@@ -35,6 +38,13 @@
 ## oscript
 
 [![Docker Pulls](https://img.shields.io/docker/pulls/sleemp/oscript)](https://hub.docker.com/r/sleemp/oscript)
+
+[![Docker Version](https://img.shields.io/docker/v/sleemp/oscript/lts?label=lts)](https://hub.docker.com/r/sleemp/oscript)
+[![Docker Version](https://img.shields.io/docker/v/sleemp/oscript/lts-dev?label=lts-dev)](https://hub.docker.com/r/sleemp/oscript)
+[![Docker Version](https://img.shields.io/docker/v/sleemp/oscript/stable?label=stable)](https://hub.docker.com/r/sleemp/oscript)
+[![Docker Version](https://img.shields.io/docker/v/sleemp/oscript/dev?label=dev)](https://hub.docker.com/r/sleemp/oscript)
+[![Docker Version](https://img.shields.io/docker/v/sleemp/oscript/preview?label=preview)](https://hub.docker.com/r/sleemp/oscript)
+
 
 Готовые собранные образы можно взять в [sleemp/oscript](https://hub.docker.com/r/sleemp/oscript)
 
@@ -88,6 +98,7 @@
 ## yard
 
 [![Docker Pulls](https://img.shields.io/docker/pulls/sleemp/yard)](https://hub.docker.com/r/sleemp/yard)
+[![Docker Version](https://img.shields.io/docker/v/sleemp/yard/latest)](https://hub.docker.com/r/sleemp/yard)
 
 Готовые собранные образы можно взять в [sleemp/yard](https://hub.docker.com/r/sleemp/yard)
 
@@ -136,6 +147,7 @@
 ## onec-installer-downloader
 
 [![Docker Pulls](https://img.shields.io/docker/pulls/sleemp/onec-installer-downloader)](https://hub.docker.com/r/sleemp/onec-installer-downloader)
+[![Docker Version](https://img.shields.io/docker/v/sleemp/onec-installer-downloader/latest)](https://hub.docker.com/r/sleemp/onec-installer-downloader)
 
 Готовые собранные образы можно взять в [sleemp/onec-installer-downloader](https://hub.docker.com/r/sleemp/onec-installer-downloader)
 
@@ -207,6 +219,7 @@ sleemp/onec-installer-downloader:20250723 thin-client32 8.3.25.1445
 ## winow
 
 [![Docker Pulls](https://img.shields.io/docker/pulls/sleemp/winow)](https://hub.docker.com/r/sleemp/winow)
+[![Docker Version](https://img.shields.io/docker/v/sleemp/winow/latest)](https://hub.docker.com/r/sleemp/winow)
 
 Готовые собранные образы можно взять в [sleemp/winow](https://hub.docker.com/r/sleemp/winow)
 
