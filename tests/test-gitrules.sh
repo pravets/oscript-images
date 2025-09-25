@@ -17,7 +17,7 @@ test_gitrules_is_running() {
 
   local expected actual
 
-  expected="ИНФОРМАЦИЯ - [СписокРелизов1С]: Инициализирован обработчик"
+  expected="Приложение: gitrules"
   actual=$(docker run --rm ${DOCKER_REGISTRY_URL}/${DOCKER_LOGIN}/gitrules:latest 2>/dev/null | head -n1)
 
   if assert_eq "$expected" "$actual"; then
