@@ -19,6 +19,7 @@
 - [yard](#yard)
 - [onec-installer-downloader](#onec-installer-downloader)
 - [winow](#winow)
+- [gitrules](#gitrules)
 
 ## Подготовительные шаги
 
@@ -265,5 +266,51 @@ sleemp/onec-installer-downloader:20250723 thin-client32 8.3.25.1445
 ### Ограничения
 
 1. Явных ограничений вроде бы нет.
+
+[↑ В начало](#oscript-images)
+
+## gitrules
+
+[![Docker Pulls](https://img.shields.io/docker/pulls/sleemp/gitrules)](https://hub.docker.com/r/sleemp/gitrules)
+[![Docker Version](https://img.shields.io/docker/v/sleemp/gitrules/latest)](https://hub.docker.com/r/sleemp/gitrules)
+
+Готовые собранные образы можно взять в [sleemp/gitrules](https://hub.docker.com/r/sleemp/gitrules)
+
+### Назначение
+
+Образ предназначен для сборки/разборки правил конвертации в формате Конвертации данных 2.0 с помощью утилиты [gitrules](https://github.com/oscript-library/gitrules).
+
+### Сборка
+
+1. [**Выполните подготовительные шаги**](#подготовительные-шаги), если не сделали это ранее
+
+1. **Добавьте тег `gitrules`**
+   - Перейдите во вкладку "Tags" или используйте команду:
+     ```bash
+     git tag -f gitrules
+     git push origin gitrules -f
+     ```
+
+   - либо клонируйте репозиторий к себе на Linux-хост (или используйте GitHub Codespaces) и запустите скрипт `./src/tag-gitrules-latest.sh` — он принудительно «перевесит» тег на последний коммит и запушит теги
+   - Это необходимо для запуска сборки gitrules через GitHub Actions.
+
+1. **Запустите сборку**
+   - После пуша тега workflow автоматически соберёт и опубликует образ `gitrules` в ваш Docker Registry.
+   - будет опубликован образ с тегом `latest`, а также с номерной версией собранного `gitrules`
+
+1. **Проверьте результат**
+   - Убедитесь, что образ появился в вашем Docker Registry с именем `gitrules` и соответствующей версией.
+
+### Зависимости
+
+Образ собирается на основе [oscript:dev](#oscript), он должен быть предварительно собран и запушен.
+
+### Использование
+
+1. Необходимо пробросить в контейнер каталог, в котором находятся ваши правила и где будет происходить сборка. Путь к каталогу внутри не регламентируеся, вы можете, например, использовать `-v ./:/tmp/rules`.
+
+1. Подробнее с использованием утилиты можно в репозитории [gitrules](https://github.com/oscript-library/gitrules)
+
+1. Также, например, образ используется в CI/CD [компоненте для сборки правил конвертации для Gitlab CI](https://gitlab.com/explore/catalog/onec-components/onec-gitrules). Репозиторий данной компоненты есть и [на GitHub](https://github.com/onec-components/onec-gitrules)
 
 [↑ В начало](#oscript-images)
