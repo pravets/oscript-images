@@ -278,7 +278,7 @@ sleemp/onec-installer-downloader:20250723 thin-client32 8.3.25.1445
 
 ### Назначение
 
-Образ предназначен для сборки/разборки правил конверации в формате Конвертации данных 2.0 с помощью утилиты [gitrules](https://github.com/oscript-library/gitrules).
+Образ предназначен для сборки/разборки правил конвертации в формате Конвертации данных 2.0 с помощью утилиты [gitrules](https://github.com/oscript-library/gitrules).
 
 ### Сборка
 
