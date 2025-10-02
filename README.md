@@ -21,6 +21,7 @@
 - [winow](#winow)
 - [gitrules](#gitrules)
 - [stebi](#stebi)
+- [edt-ripper](#edt-ripper)
 
 ## Подготовительные шаги
 
@@ -365,6 +366,62 @@ sleemp/onec-installer-downloader:20250723 thin-client32 8.3.25.1445
    ```
 
 1. Подробнее с использованием утилиты можно ознакомиться в репозитории [stebi](https://github.com/Stepa86/stebi)
+
+### Ограничения
+
+Явных ограничений нет.
+
+[↑ В начало](#oscript-images)
+
+## edt-ripper
+
+[![Docker Pulls](https://img.shields.io/docker/pulls/sleemp/edt-ripper)](https://hub.docker.com/r/sleemp/edt-ripper)
+[![Docker Version](https://img.shields.io/docker/v/sleemp/edt-ripper/latest)](https://hub.docker.com/r/sleemp/edt-ripper)
+
+Готовые собранные образы можно взять в [sleemp/edt-ripper](https://hub.docker.com/r/sleemp/edt-ripper)
+
+### Назначение
+
+Образ предназначен для работы с замечаниями EDT и файлами правил для SonarQube с помощью утилиты [edt-ripper](https://github.com/bia-technologies/edt_ripper). Утилита выполняет разбор EDT отчета анализа проекта, формирует результат в формате bsl-ls и мапит обнаруженные замечания с правилами (внутренний файл правил, внешний файл правил).
+
+### Сборка
+
+1. [**Выполните подготовительные шаги**](#подготовительные-шаги), если не сделали это ранее
+
+1. **Добавьте тег `edt-ripper`**
+   - Перейдите во вкладку "Tags" или используйте команду:
+     ```bash
+     git tag -f edt-ripper
+     git push origin edt-ripper -f
+     ```
+
+   - либо клонируйте репозиторий к себе на Linux-хост (или используйте GitHub Codespaces) и запустите скрипт `./src/tag-edt-ripper-latest.sh` — он принудительно «перевесит» тег на последний коммит и запушит теги
+   - Это необходимо для запуска сборки edt-ripper через GitHub Actions.
+
+1. **Запустите сборку**
+   - После пуша тега workflow автоматически соберёт и опубликует образ `edt-ripper` в ваш Docker Registry.
+   - будет опубликован образ с тегом `latest`, а также с номерной версией собранного `edt-ripper`
+
+1. **Проверьте результат**
+   - Убедитесь, что образ появился в вашем Docker Registry с именем `edt-ripper` и соответствующей версией.
+
+### Зависимости
+
+Образ собирается на основе [oscript:dev](#oscript), он должен быть предварительно собран и запушен.
+
+### Использование
+
+1. Образ можно использовать для разбора EDT отчета и формирования результата в формате bsl-ls:
+   ```bash
+   docker run --rm -v ./:/workspace sleemp/edt-ripper:latest parse ./edt-report.txt ./bsl-ls-output.json
+   ```
+
+1. Для просмотра всех доступных команд запустите образ без параметров или с ключом `--help`:
+   ```bash
+   docker run --rm sleemp/edt-ripper:latest
+   ```
+
+1. Подробнее с использованием утилиты можно ознакомиться в репозитории [edt-ripper](https://github.com/bia-technologies/edt_ripper)
 
 ### Ограничения
 
