@@ -382,7 +382,7 @@ sleemp/onec-installer-downloader:20250723 thin-client32 8.3.25.1445
 
 ### Назначение
 
-Образ предназначен для разборки/сборки EDT-проектов с помощью утилиты [edt-ripper](https://github.com/bia-technologies/edt_ripper). Утилита позволяет разобрать проект EDT в исходники и собрать обратно, что полезно для версионного контроля и автоматизации.
+Образ предназначен для работы с замечаниями EDT и файлами правил для SonarQube с помощью утилиты [edt-ripper](https://github.com/bia-technologies/edt_ripper). Утилита выполняет разбор EDT отчета анализа проекта, формирует результат в формате bsl-ls и мапит обнаруженные замечания с правилами (внутренний файл правил, внешний файл правил).
 
 ### Сборка
 
@@ -411,9 +411,9 @@ sleemp/onec-installer-downloader:20250723 thin-client32 8.3.25.1445
 
 ### Использование
 
-1. Образ можно использовать для разборки EDT-проекта в исходники:
+1. Образ можно использовать для разбора EDT отчета и формирования результата в формате bsl-ls:
    ```bash
-   docker run --rm -v ./:/workspace sleemp/edt-ripper:latest unpack ./project.edt ./src
+   docker run --rm -v ./:/workspace sleemp/edt-ripper:latest parse ./edt-report.txt ./bsl-ls-output.json
    ```
 
 1. Для просмотра всех доступных команд запустите образ без параметров или с ключом `--help`:
