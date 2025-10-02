@@ -20,6 +20,7 @@
 - [onec-installer-downloader](#onec-installer-downloader)
 - [winow](#winow)
 - [gitrules](#gitrules)
+- [stebi](#stebi)
 
 ## Подготовительные шаги
 
@@ -312,5 +313,61 @@ sleemp/onec-installer-downloader:20250723 thin-client32 8.3.25.1445
 1. Подробнее с использованием утилиты можно в репозитории [gitrules](https://github.com/oscript-library/gitrules)
 
 1. Также, например, образ используется в CI/CD [компоненте для сборки правил конвертации для Gitlab CI](https://gitlab.com/explore/catalog/onec-components/onec-gitrules). Репозиторий данной компоненты есть и [на GitHub](https://github.com/onec-components/onec-gitrules)
+
+[↑ В начало](#oscript-images)
+
+## stebi
+
+[![Docker Pulls](https://img.shields.io/docker/pulls/sleemp/stebi)](https://hub.docker.com/r/sleemp/stebi)
+[![Docker Version](https://img.shields.io/docker/v/sleemp/stebi/latest)](https://hub.docker.com/r/sleemp/stebi)
+
+Готовые собранные образы можно взять в [sleemp/stebi](https://hub.docker.com/r/sleemp/stebi)
+
+### Назначение
+
+Образ предназначен для экспорта диагностик 1С: EDT в формат SonarQube 1C (BSL) Community Plugin с помощью утилиты [stebi](https://github.com/Stepa86/stebi). Утилита позволяет конвертировать результаты проверки проекта 1С:EDT, трансформировать диагностики, изменять параметры и получать версию конфигурации.
+
+### Сборка
+
+1. [**Выполните подготовительные шаги**](#подготовительные-шаги), если не сделали это ранее
+
+1. **Добавьте тег `stebi`**
+   - Перейдите во вкладку "Tags" или используйте команду:
+     ```bash
+     git tag -f stebi
+     git push origin stebi -f
+     ```
+
+   - либо клонируйте репозиторий к себе на Linux-хост (или используйте GitHub Codespaces) и запустите скрипт `./src/tag-stebi-latest.sh` — он принудительно «перевесит» тег на последний коммит и запушит теги
+   - Это необходимо для запуска сборки stebi через GitHub Actions.
+
+1. **Запустите сборку**
+   - После пуша тега workflow автоматически соберёт и опубликует образ `stebi` в ваш Docker Registry.
+   - будет опубликован образ с тегом `latest`, а также с номерной версией собранного `stebi`
+
+1. **Проверьте результат**
+   - Убедитесь, что образ появился в вашем Docker Registry с именем `stebi` и соответствующей версией.
+
+### Зависимости
+
+Образ собирается на основе [oscript:dev](#oscript), он должен быть предварительно собран и запушен.
+
+### Использование
+
+1. Образ можно использовать для конвертации результатов проверки EDT в формат JSON для SonarQube:
+   ```bash
+   docker run --rm -v ./:/workspace sleemp/stebi:latest convert ./edt-result.out ./edt-json.json ./src
+   ```
+
+1. Для просмотра всех доступных команд запустите образ без параметров или с ключом `--help`:
+   ```bash
+   docker run --rm sleemp/stebi:latest
+   ```
+
+1. Подробнее с использованием утилиты можно ознакомиться в репозитории [stebi](https://github.com/Stepa86/stebi)
+
+### Ограничения
+
+Явных ограничений нет.
 
 [↑ В начало](#oscript-images)
