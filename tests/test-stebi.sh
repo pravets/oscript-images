@@ -22,7 +22,7 @@ test_stebi_is_running() {
   local expected actual
 
   expected="Приложение: stebi"
-  actual=$(docker run --rm ${DOCKER_REGISTRY_URL}/${DOCKER_LOGIN}/stebi:latest --help 2>/dev/null | head -n1)
+  actual=$(docker run --rm ${DOCKER_REGISTRY_URL}/${DOCKER_LOGIN}/stebi:latest 2>/dev/null | head -n1)
 
   if assert_eq "$expected" "$actual"; then
     log_success "stebi is running test passed"

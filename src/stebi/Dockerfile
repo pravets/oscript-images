@@ -9,3 +9,4 @@ LABEL maintainer="Iosif Pravets <i@pravets.ru>"
 RUN opm i stebi; 
 
 ENTRYPOINT ["stebi"]
+CMD ["--help"]
