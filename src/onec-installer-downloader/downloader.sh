@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# originally created by @ovcharenko-di and @Segate-ekb in https://github.com/firstBitMarksistskaya/onec-docker/blob/feature/first-bit/scripts/download_yard.sh
+
 if [ "$#" -ne 2 ]; then
     echo "Usage: $0 <installer_type> <ONEC_VERSION>"
     exit 1
