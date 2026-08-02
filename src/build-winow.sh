@@ -43,7 +43,7 @@ docker build \
 
 if ./tests/test-winow.sh; then
     opm_output=$(docker run --rm --entrypoint "opm" "${DOCKER_REGISTRY_URL}/${DOCKER_LOGIN}/winow:${winow_version}" ls)
-    container_version=$(echo "$opm_output" | awk -F '|' '/^winow[[:space:]]+\|/ {gsub(/ /, "", $2); print $2}')
+    container_version=$(echo "$opm_output" | awk -F '|' '/^winow[[:space:]]+\|/ {gsub(/ /, "", $3); print $3}')
 
     if [[ -z "${container_version}" ]]; then
         log_failure "Не удалось получить версию из контейнера"
