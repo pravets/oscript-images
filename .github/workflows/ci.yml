@@ -108,6 +108,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3
+        with:
+          driver: docker  # docker-container (по умолчанию) не видит локальные образы из демона
 
       - name: Prepare oscript base image
         run: |
@@ -149,6 +151,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3
+        with:
+          driver: docker  # docker-container (по умолчанию) не видит локальные образы из демона
 
       - name: Build and test ${{ matrix.image }} (no push)
         run: |
