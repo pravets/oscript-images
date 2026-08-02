@@ -153,6 +153,8 @@ jobs:
       PUSH_IMAGE: 'false'
       DOCKER_REGISTRY_URL: 'ci'
       DOCKER_LOGIN: 'build'
+      ONEC_USERNAME: ${{ secrets.ONEC_USERNAME }}
+      ONEC_PASSWORD: ${{ secrets.ONEC_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3
@@ -198,3 +200,32 @@ jobs:
               ./src/build-${{ matrix.image }}.sh
               ;;
           esac
+
+      # Реальная проверка скачивания дистрибутивов 1С через yard.
+      # Работает только если секреты доступны (не в форк-PR).
+      - name: Test distro downloads (8.3.27.2214, 8.5.1.1343, EDT 2026.1.2)
+        if: matrix.image == 'oid' && env.ONEC_USERNAME != ''
+        env:
+          YARD_RELEASES_USER: ${{ secrets.ONEC_USERNAME }}
+          YARD_RELEASES_PWD: ${{ secrets.ONEC_PASSWORD }}
+        run: |
+          set -euo pipefail
+          # server 8.3.27.2214
+          echo "=== Downloading 1C server 8.3.27.2214 ==="
+          docker run --rm \
+            -e YARD_RELEASES_USER="$YARD_RELEASES_USER" \
+            -e YARD_RELEASES_PWD="$YARD_RELEASES_PWD" \
+            -v /tmp/downloads:/tmp/downloads \
+            ci/build/onec-installer-downloader:ci-test server 8.3.27.2214
+          echo "=== Downloading 1C server 8.5.1.1343 ==="
+          docker run --rm \
+            -e YARD_RELEASES_USER="$YARD_RELEASES_USER" \
+            -e YARD_RELEASES_PWD="$YARD_RELEASES_PWD" \
+            -v /tmp/downloads:/tmp/downloads \
+            ci/build/onec-installer-downloader:ci-test server 8.5.1.1343
+          echo "=== Downloading EDT 2026.1.2 ==="
+          docker run --rm \
+            -e YARD_RELEASES_USER="$YARD_RELEASES_USER" \
+            -e YARD_RELEASES_PWD="$YARD_RELEASES_PWD" \
+            -v /tmp/downloads:/tmp/downloads \
+            ci/build/onec-installer-downloader:ci-test edt 2026.1.2
