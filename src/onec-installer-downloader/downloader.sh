@@ -16,8 +16,11 @@ fi
 installer_type=$1
 ONEC_VERSION=$2
 
+platform_minor=$(echo "$ONEC_VERSION" | awk -F. '{print $1 "." $2}')
 if [ "$installer_type" = "edt" ]; then
     FOLDER_NAME="DevelopmentTools10"
+elif [ "$platform_minor" = "8.5" ]; then
+    FOLDER_NAME="Platform85"
 else
     FOLDER_NAME="Platform83"
 fi
@@ -172,7 +175,10 @@ check_file() {
 try_download() {
 
   # Определим фильтры для скачивания. Если шаблонов >1 они должны разделяться "|" Скачивается дистрибутив по первому найденному шаблону.
-  APP_FILTER="Технологическая платформа *8\.3"
+  case "$platform_minor" in
+    8.5) APP_FILTER="Технологическая платформа *8\.5" ;;
+    *)   APP_FILTER="Технологическая платформа *8\.3" ;;
+  esac
   case "$installer_type" in
     edt)
         echo "Скачиваем дистрибутив EDT"
