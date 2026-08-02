@@ -23,10 +23,24 @@ if [[ ${NO_CACHE:-} = "true" ]] ; then
 	last_arg="--no-cache ${PROJECT_ROOT}"
 fi
 
+# В CI (PUSH_IMAGE=false) база уже подготовлена локально — --pull заставил бы BuildKit
+# игнорировать локальный образ и тянуть из registry
+pull_arg="--pull"
+if [[ "${PUSH_IMAGE:-true}" != "true" ]]; then
+	pull_arg=""
+fi
+
+# В CI (PUSH_IMAGE=false) база уже подготовлена локально — --pull заставил бы BuildKit
+# игнорировать локальный образ и тянуть из registry
+pull_arg="--pull"
+if [[ "${PUSH_IMAGE:-true}" != "true" ]]; then
+	pull_arg=""
+fi
+
 oscript_version="${OSCRIPT_VERSION}"
 
 docker build \
-    --pull \
+    ${pull_arg} \
     --build-arg OSCRIPT_VERSION="${oscript_version}" \
     -t "${DOCKER_REGISTRY_URL}/${DOCKER_LOGIN}/oscript:${oscript_version}" \
     -f "${SCRIPT_DIR}/oscript/Dockerfile" \

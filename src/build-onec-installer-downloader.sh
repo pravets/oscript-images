@@ -23,11 +23,18 @@ if [[ ${NO_CACHE:-} = "true" ]] ; then
 	last_arg="--no-cache ${PROJECT_ROOT}"
 fi
 
+# В CI (PUSH_IMAGE=false) база уже подготовлена локально — --pull заставил бы BuildKit
+# игнорировать локальный образ и тянуть из registry
+pull_arg="--pull"
+if [[ "${PUSH_IMAGE:-true}" != "true" ]]; then
+	pull_arg=""
+fi
+
 onec_installer_downloader_version="${ONEC_INSTALLER_DOWNLOADER_VERSION}"
 image_name=onec-installer-downloader
 
 docker build \
-    --pull \
+    ${pull_arg} \
     --build-arg ONEC_INSTALLER_DOWNLOADER_VERSION="${onec_installer_downloader_version}" \
     --build-arg DOCKER_REGISTRY_URL="${DOCKER_REGISTRY_URL}" \
     --build-arg DOCKER_LOGIN="${DOCKER_LOGIN}" \

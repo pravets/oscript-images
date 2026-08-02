@@ -23,10 +23,17 @@ if [[ ${NO_CACHE:-} = "true" ]] ; then
 	last_arg="--no-cache ${PROJECT_ROOT}"
 fi
 
+# В CI (PUSH_IMAGE=false) база уже подготовлена локально — --pull заставил бы BuildKit
+# игнорировать локальный образ и тянуть из registry
+pull_arg="--pull"
+if [[ "${PUSH_IMAGE:-true}" != "true" ]]; then
+	pull_arg=""
+fi
+
 winow_version="latest"
 
 docker build \
-    --pull \
+    ${pull_arg} \
     --build-arg WINOW_VERSION="${winow_version}" \
     --build-arg DOCKER_REGISTRY_URL="${DOCKER_REGISTRY_URL}" \
     --build-arg DOCKER_LOGIN="${DOCKER_LOGIN}" \
