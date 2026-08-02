@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# При PUSH_IMAGE=false (PR-сборки) логин не нужен — образы остаются локальными
+if [[ "${PUSH_IMAGE:-true}" != "true" ]]; then
+    echo "PUSH_IMAGE != true — пропускаем docker login"
+    return 0
+fi
+
 # Проверка наличия необходимых переменных среды
 if [[ -z "$DOCKER_REGISTRY_URL" || -z "$DOCKER_LOGIN" || -z "$DOCKER_PASSWORD" ]]; then
     echo "Ошибка: Необходимо установить переменные среды DOCKER_REGISTRY_URL, DOCKER_LOGIN и DOCKER_PASSWORD."

@@ -23,11 +23,18 @@ if [[ ${NO_CACHE:-} = "true" ]] ; then
 	last_arg="--no-cache ${PROJECT_ROOT}"
 fi
 
+# В CI (PUSH_IMAGE=false) база уже подготовлена локально — --pull заставил бы BuildKit
+# игнорировать локальный образ и тянуть из registry
+pull_arg="--pull"
+if [[ "${PUSH_IMAGE:-true}" != "true" ]]; then
+	pull_arg=""
+fi
+
 onec_installer_downloader_version="${ONEC_INSTALLER_DOWNLOADER_VERSION}"
 image_name=onec-installer-downloader
 
 docker build \
-    --pull \
+    ${pull_arg} \
     --build-arg ONEC_INSTALLER_DOWNLOADER_VERSION="${onec_installer_downloader_version}" \
     --build-arg DOCKER_REGISTRY_URL="${DOCKER_REGISTRY_URL}" \
     --build-arg DOCKER_LOGIN="${DOCKER_LOGIN}" \
@@ -36,10 +43,14 @@ docker build \
     ${last_arg}
 
 if ${SCRIPT_DIR}/../tests/test-onec-installer-downloader.sh; then  
-    docker push "${DOCKER_REGISTRY_URL}/${DOCKER_LOGIN}/${image_name}:${onec_installer_downloader_version}"
+    if [[ "${PUSH_IMAGE:-true}" == "true" ]]; then
+        docker push "${DOCKER_REGISTRY_URL}/${DOCKER_LOGIN}/${image_name}:${onec_installer_downloader_version}"
 
-    docker tag "${DOCKER_REGISTRY_URL}/${DOCKER_LOGIN}/${image_name}:${onec_installer_downloader_version}" "${DOCKER_REGISTRY_URL}/${DOCKER_LOGIN}/${image_name}:latest"
-    docker push "${DOCKER_REGISTRY_URL}/${DOCKER_LOGIN}/${image_name}:latest"
+        docker tag "${DOCKER_REGISTRY_URL}/${DOCKER_LOGIN}/${image_name}:${onec_installer_downloader_version}" "${DOCKER_REGISTRY_URL}/${DOCKER_LOGIN}/${image_name}:latest"
+        docker push "${DOCKER_REGISTRY_URL}/${DOCKER_LOGIN}/${image_name}:latest"
+    else
+        echo "PUSH_IMAGE != true — push пропущен (теги не создаём)"
+    fi
 
     source "${SCRIPT_DIR}/../scripts/cleanup.sh"
 else

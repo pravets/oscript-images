@@ -1,0 +1,231 @@
+name: CI
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'scripts/**'
+      - 'tools/**'
+      - '.github/workflows/ci.yml'
+      - '!src/tag-*.sh'
+
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+      has_changes: ${{ steps.set-matrix.outputs.has_changes }}
+      base_changed: ${{ steps.set-matrix.outputs.base_changed }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            oscript:
+              - 'src/oscript/**'
+              - 'src/build-oscript.sh'
+              - 'tests/test-oscript.sh'
+            yard:
+              - 'src/yard/**'
+              - 'src/build-yard.sh'
+              - 'tests/test-yard.sh'
+            oid:
+              - 'src/onec-installer-downloader/**'
+              - 'src/build-onec-installer-downloader.sh'
+              - 'tests/test-onec-installer-downloader.sh'
+            winow:
+              - 'src/winow/**'
+              - 'src/build-winow.sh'
+              - 'tests/test-winow.sh'
+              - 'tests/winow/**'
+            gitrules:
+              - 'src/gitrules/**'
+              - 'src/build-gitrules.sh'
+              - 'tests/test-gitrules.sh'
+            stebi:
+              - 'src/stebi/**'
+              - 'src/build-stebi.sh'
+              - 'tests/test-stebi.sh'
+            edt-ripper:
+              - 'src/edt-ripper/**'
+              - 'src/build-edt-ripper.sh'
+              - 'tests/test-edt-ripper.sh'
+            common:
+              - 'scripts/**'
+              - 'tools/**'
+              - '.github/workflows/ci.yml'
+
+      - id: set-matrix
+        shell: bash
+        run: |
+          set -euo pipefail
+          images=()
+          all_images=(oscript yard oid winow gitrules stebi edt-ripper)
+
+          # Изменилась база oscript → собираем всё (регрессия downstream)
+          if [[ '${{ steps.changes.outputs.oscript }}' == 'true' ]]; then
+            images=("${all_images[@]}")
+            echo 'base_changed=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'base_changed=false' >> "$GITHUB_OUTPUT"
+            [[ '${{ steps.changes.outputs.yard }}' == 'true' ]] && images+=(yard)
+            [[ '${{ steps.changes.outputs.oid }}' == 'true' ]] && images+=(oid)
+            [[ '${{ steps.changes.outputs.winow }}' == 'true' ]] && images+=(winow)
+            [[ '${{ steps.changes.outputs.gitrules }}' == 'true' ]] && images+=(gitrules)
+            [[ '${{ steps.changes.outputs.stebi }}' == 'true' ]] && images+=(stebi)
+            [[ '${{ steps.changes.outputs.edt-ripper }}' == 'true' ]] && images+=(edt-ripper)
+          fi
+
+          # Общая инфраструктура (scripts/tools/workflow) → всё
+          if [[ '${{ steps.changes.outputs.common }}' == 'true' ]]; then
+            images=("${all_images[@]}")
+          fi
+
+          if (( ${#images[@]} == 0 )); then
+            {
+              echo 'has_changes=false'
+              echo 'matrix={"image":[]}'
+            } >> "$GITHUB_OUTPUT"
+          else
+            echo 'has_changes=true' >> "$GITHUB_OUTPUT"
+            json="$(jq -cn --argjson arr "$(printf '%s\n' "${images[@]}" | jq -R . | jq -s .)" '{image: $arr}')"
+            echo "matrix=$json" >> "$GITHUB_OUTPUT"
+          fi
+
+  # Собирает базу oscript из кода PR, если она изменилась, и передаёт её
+  # build-джобам через artifact (джобы выполняются на изолированных раннерах,
+  # образы между ними не переживают). Всегда запускается — иначе outputs
+  # недоступны в build.
+  build-base:
+    needs: detect
+    runs-on: ubuntu-latest
+    outputs:
+      base_ready: ${{ steps.build.outputs.base_ready }}
+    env:
+      CI: 'true'
+      PUSH_IMAGE: 'false'
+      DOCKER_REGISTRY_URL: 'ci'
+      DOCKER_LOGIN: 'build'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+        with:
+          driver: docker  # docker-container не видит локальные образы из демона
+
+      - name: Build oscript and yard from PR code
+        id: build
+        if: needs.detect.outputs.base_changed == 'true'
+        run: |
+          set -euo pipefail
+          export OSCRIPT_VERSION=stable
+          ./src/build-oscript.sh
+          # yard нужен onec-installer-downloader'у как база — собираем и его
+          ./src/build-yard.sh
+          mkdir -p /tmp/base
+          docker save ci/build/oscript:stable ci/build/yard:latest | gzip > /tmp/base/base-images.tar.gz
+          echo 'base_ready=true' >> "$GITHUB_OUTPUT"
+
+      - name: Mark base as not changed
+        if: needs.detect.outputs.base_changed != 'true'
+        run: echo 'base_ready=false' >> "$GITHUB_OUTPUT"
+
+      - name: Upload base images
+        if: needs.detect.outputs.base_changed == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: base-images
+          path: /tmp/base/base-images.tar.gz
+          retention-days: 1
+
+  build:
+    needs: [detect, build-base]
+    if: needs.detect.outputs.has_changes == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.detect.outputs.matrix) }}
+    env:
+      CI: 'true'
+      PUSH_IMAGE: 'false'
+      DOCKER_REGISTRY_URL: 'ci'
+      DOCKER_LOGIN: 'build'
+      ONEC_USERNAME: ${{ secrets.ONEC_USERNAME }}
+      ONEC_PASSWORD: ${{ secrets.ONEC_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+        with:
+          driver: docker  # docker-container не видит локальные образы из демона
+
+      # Блок: не трогаем, если oscript в матрице — он собирает сам себя ниже
+      - name: Load PR-built base images
+        if: needs.build-base.outputs.base_ready == 'true' && matrix.image != 'oscript'
+        uses: actions/download-artifact@v4
+        with:
+          name: base-images
+          path: /tmp/base
+
+      - name: Import base images into docker
+        if: needs.build-base.outputs.base_ready == 'true' && matrix.image != 'oscript'
+        run: docker load < /tmp/base/base-images.tar.gz
+
+      - name: Pull public base images
+        if: needs.build-base.outputs.base_ready != 'true'
+        run: |
+          set -euo pipefail
+          docker pull sleemp/oscript:stable
+          docker tag sleemp/oscript:stable ci/build/oscript:stable
+          if [[ '${{ matrix.image }}' == 'oid' ]]; then
+            docker pull sleemp/yard:latest
+            docker tag sleemp/yard:latest ci/build/yard:latest
+          fi
+
+      - name: Build and test ${{ matrix.image }} (no push)
+        run: |
+          set -euo pipefail
+          case '${{ matrix.image }}' in
+            oscript)
+              export OSCRIPT_VERSION=stable
+              ./src/build-oscript.sh
+              ;;
+            oid)
+              export ONEC_INSTALLER_DOWNLOADER_VERSION=ci-test
+              ./src/build-onec-installer-downloader.sh
+              ;;
+            *)
+              ./src/build-${{ matrix.image }}.sh
+              ;;
+          esac
+
+      # Реальная проверка скачивания дистрибутивов 1С через yard.
+      # Работает только если секреты доступны (не в форк-PR).
+      - name: Test distro downloads (8.3.27.2214, 8.5.1.1343, EDT 2026.1.2)
+        if: matrix.image == 'oid' && env.ONEC_USERNAME != ''
+        env:
+          YARD_RELEASES_USER: ${{ secrets.ONEC_USERNAME }}
+          YARD_RELEASES_PWD: ${{ secrets.ONEC_PASSWORD }}
+        run: |
+          set -euo pipefail
+          # server 8.3.27.2214
+          echo "=== Downloading 1C server 8.3.27.2214 ==="
+          docker run --rm \
+            -e YARD_RELEASES_USER="$YARD_RELEASES_USER" \
+            -e YARD_RELEASES_PWD="$YARD_RELEASES_PWD" \
+            -v /tmp/downloads:/tmp/downloads \
+            ci/build/onec-installer-downloader:ci-test server 8.3.27.2214
+          echo "=== Downloading 1C server 8.5.1.1343 ==="
+          docker run --rm \
+            -e YARD_RELEASES_USER="$YARD_RELEASES_USER" \
+            -e YARD_RELEASES_PWD="$YARD_RELEASES_PWD" \
+            -v /tmp/downloads:/tmp/downloads \
+            ci/build/onec-installer-downloader:ci-test server 8.5.1.1343
+          echo "=== Downloading EDT 2026.1.2 ==="
+          docker run --rm \
+            -e YARD_RELEASES_USER="$YARD_RELEASES_USER" \
+            -e YARD_RELEASES_PWD="$YARD_RELEASES_PWD" \
+            -v /tmp/downloads:/tmp/downloads \
+            ci/build/onec-installer-downloader:ci-test edt 2026.1.2

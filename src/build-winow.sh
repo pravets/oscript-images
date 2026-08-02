@@ -23,10 +23,17 @@ if [[ ${NO_CACHE:-} = "true" ]] ; then
 	last_arg="--no-cache ${PROJECT_ROOT}"
 fi
 
+# В CI (PUSH_IMAGE=false) база уже подготовлена локально — --pull заставил бы BuildKit
+# игнорировать локальный образ и тянуть из registry
+pull_arg="--pull"
+if [[ "${PUSH_IMAGE:-true}" != "true" ]]; then
+	pull_arg=""
+fi
+
 winow_version="latest"
 
 docker build \
-    --pull \
+    ${pull_arg} \
     --build-arg WINOW_VERSION="${winow_version}" \
     --build-arg DOCKER_REGISTRY_URL="${DOCKER_REGISTRY_URL}" \
     --build-arg DOCKER_LOGIN="${DOCKER_LOGIN}" \
@@ -38,15 +45,18 @@ if ./tests/test-winow.sh; then
     opm_output=$(docker run --rm --entrypoint "opm" "${DOCKER_REGISTRY_URL}/${DOCKER_LOGIN}/winow:${winow_version}" ls)
     container_version=$(echo "$opm_output" | awk -F '|' '/^winow[[:space:]]+\|/ {gsub(/ /, "", $2); print $2}')
 
-    if [[ -n "${container_version}" ]]; then
+    if [[ -z "${container_version}" ]]; then
+        log_failure "Не удалось получить версию из контейнера"
+        exit 1
+    fi
+
+    if [[ "${PUSH_IMAGE:-true}" == "true" ]]; then
         docker push "${DOCKER_REGISTRY_URL}/${DOCKER_LOGIN}/winow:${winow_version}"
 
         docker tag "${DOCKER_REGISTRY_URL}/${DOCKER_LOGIN}/winow:${winow_version}" "${DOCKER_REGISTRY_URL}/${DOCKER_LOGIN}/winow:${container_version}"
         docker push "${DOCKER_REGISTRY_URL}/${DOCKER_LOGIN}/winow:${container_version}"
-
     else
-        log_failure "Не удалось получить версию из контейнера"
-        exit 1
+        echo "PUSH_IMAGE != true — push пропущен (теги не создаём)"
     fi
 
     source "${SCRIPT_DIR}/../scripts/cleanup.sh"
