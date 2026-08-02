@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Разлогинивание из Docker
-if [ -n "$DOCKER_REGISTRY_URL" ]; then
-    docker logout "$DOCKER_REGISTRY_URL"
-else
-    docker logout
+# Разлогинивание из Docker (только если логинились — при PUSH_IMAGE=false логина не было)
+if [[ "${PUSH_IMAGE:-true}" == "true" ]]; then
+    if [ -n "${DOCKER_REGISTRY_URL:-}" ]; then
+        docker logout "$DOCKER_REGISTRY_URL"
+    else
+        docker logout
+    fi
 fi
 
 # Очистка переменных среды из .env

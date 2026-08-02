@@ -35,7 +35,12 @@ docker build \
 if ./tests/test-oscript.sh; then
     container_version=$(docker run --rm  "${DOCKER_REGISTRY_URL}/${DOCKER_LOGIN}/oscript:${oscript_version}" -v | head -n1 | awk '{print $NF}')
 
-    if [[ -n "${container_version}" ]]; then
+    if [[ -z "${container_version}" ]]; then
+        log_failure "Не удалось получить версию из контейнера"
+        exit 1
+    fi
+
+    if [[ "${PUSH_IMAGE:-true}" == "true" ]]; then
         docker push "${DOCKER_REGISTRY_URL}/${DOCKER_LOGIN}/oscript:${oscript_version}"
 
         container_version="$(echo "$container_version" | sed 's/+/_/g')"
@@ -52,10 +57,8 @@ if ./tests/test-oscript.sh; then
                 exit 1
             fi
         fi
-
     else
-        log_failure "Не удалось получить версию из контейнера"
-        exit 1
+        echo "PUSH_IMAGE != true — push пропущен (теги не создаём)"
     fi
     source "${SCRIPT_DIR}/../scripts/cleanup.sh"
 else

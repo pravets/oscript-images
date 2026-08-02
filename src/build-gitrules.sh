@@ -37,15 +37,18 @@ docker build \
 if ./tests/test-gitrules.sh; then
     container_version=$(docker run --rm  "${DOCKER_REGISTRY_URL}/${DOCKER_LOGIN}/gitrules:${gitrules_version}" --version | tail -n1)
 
-    if [[ -n "${container_version}" ]]; then
+    if [[ -z "${container_version}" ]]; then
+        log_failure "Не удалось получить версию из контейнера"
+        exit 1
+    fi
+
+    if [[ "${PUSH_IMAGE:-true}" == "true" ]]; then
         docker push "${DOCKER_REGISTRY_URL}/${DOCKER_LOGIN}/gitrules:${gitrules_version}"
 
         docker tag "${DOCKER_REGISTRY_URL}/${DOCKER_LOGIN}/gitrules:${gitrules_version}" "${DOCKER_REGISTRY_URL}/${DOCKER_LOGIN}/gitrules:${container_version}"
         docker push "${DOCKER_REGISTRY_URL}/${DOCKER_LOGIN}/gitrules:${container_version}"
-
     else
-        log_failure "Не удалось получить версию из контейнера"
-        exit 1
+        echo "PUSH_IMAGE != true — push пропущен (теги не создаём)"
     fi
 
     source "${SCRIPT_DIR}/../scripts/cleanup.sh"

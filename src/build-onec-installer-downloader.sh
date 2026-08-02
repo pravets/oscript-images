@@ -36,10 +36,14 @@ docker build \
     ${last_arg}
 
 if ${SCRIPT_DIR}/../tests/test-onec-installer-downloader.sh; then  
-    docker push "${DOCKER_REGISTRY_URL}/${DOCKER_LOGIN}/${image_name}:${onec_installer_downloader_version}"
+    if [[ "${PUSH_IMAGE:-true}" == "true" ]]; then
+        docker push "${DOCKER_REGISTRY_URL}/${DOCKER_LOGIN}/${image_name}:${onec_installer_downloader_version}"
 
-    docker tag "${DOCKER_REGISTRY_URL}/${DOCKER_LOGIN}/${image_name}:${onec_installer_downloader_version}" "${DOCKER_REGISTRY_URL}/${DOCKER_LOGIN}/${image_name}:latest"
-    docker push "${DOCKER_REGISTRY_URL}/${DOCKER_LOGIN}/${image_name}:latest"
+        docker tag "${DOCKER_REGISTRY_URL}/${DOCKER_LOGIN}/${image_name}:${onec_installer_downloader_version}" "${DOCKER_REGISTRY_URL}/${DOCKER_LOGIN}/${image_name}:latest"
+        docker push "${DOCKER_REGISTRY_URL}/${DOCKER_LOGIN}/${image_name}:latest"
+    else
+        echo "PUSH_IMAGE != true — push пропущен (теги не создаём)"
+    fi
 
     source "${SCRIPT_DIR}/../scripts/cleanup.sh"
 else
