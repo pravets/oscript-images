@@ -1,0 +1,168 @@
+name: CI
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'scripts/**'
+      - 'tools/**'
+      - '.github/workflows/ci.yml'
+      - '!src/tag-*.sh'
+
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+      has_changes: ${{ steps.set-matrix.outputs.has_changes }}
+      base_changed: ${{ steps.set-matrix.outputs.base_changed }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            oscript:
+              - 'src/oscript/**'
+              - 'src/build-oscript.sh'
+              - 'tests/test-oscript.sh'
+            yard:
+              - 'src/yard/**'
+              - 'src/build-yard.sh'
+              - 'tests/test-yard.sh'
+            oid:
+              - 'src/onec-installer-downloader/**'
+              - 'src/build-onec-installer-downloader.sh'
+              - 'tests/test-onec-installer-downloader.sh'
+            winow:
+              - 'src/winow/**'
+              - 'src/build-winow.sh'
+              - 'tests/test-winow.sh'
+              - 'tests/winow/**'
+            gitrules:
+              - 'src/gitrules/**'
+              - 'src/build-gitrules.sh'
+              - 'tests/test-gitrules.sh'
+            stebi:
+              - 'src/stebi/**'
+              - 'src/build-stebi.sh'
+              - 'tests/test-stebi.sh'
+            edt-ripper:
+              - 'src/edt-ripper/**'
+              - 'src/build-edt-ripper.sh'
+              - 'tests/test-edt-ripper.sh'
+            common:
+              - 'scripts/**'
+              - 'tools/**'
+              - '.github/workflows/ci.yml'
+
+      - id: set-matrix
+        shell: bash
+        run: |
+          set -euo pipefail
+          images=()
+          all_images=(oscript yard oid winow gitrules stebi edt-ripper)
+
+          # Изменилась база oscript → собираем всё (регрессия downstream)
+          if [[ '${{ steps.changes.outputs.oscript }}' == 'true' ]]; then
+            images=("${all_images[@]}")
+            echo 'base_changed=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'base_changed=false' >> "$GITHUB_OUTPUT"
+            [[ '${{ steps.changes.outputs.yard }}' == 'true' ]] && images+=(yard)
+            [[ '${{ steps.changes.outputs.oid }}' == 'true' ]] && images+=(oid)
+            [[ '${{ steps.changes.outputs.winow }}' == 'true' ]] && images+=(winow)
+            [[ '${{ steps.changes.outputs.gitrules }}' == 'true' ]] && images+=(gitrules)
+            [[ '${{ steps.changes.outputs.stebi }}' == 'true' ]] && images+=(stebi)
+            [[ '${{ steps.changes.outputs.edt-ripper }}' == 'true' ]] && images+=(edt-ripper)
+          fi
+
+          # Общая инфраструктура (scripts/tools/workflow) → всё
+          if [[ '${{ steps.changes.outputs.common }}' == 'true' ]]; then
+            images=("${all_images[@]}")
+          fi
+
+          if (( ${#images[@]} == 0 )); then
+            {
+              echo 'has_changes=false'
+              echo 'matrix={"image":[]}'
+            } >> "$GITHUB_OUTPUT"
+          else
+            echo 'has_changes=true' >> "$GITHUB_OUTPUT"
+            json="$(jq -cn --argjson arr "$(printf '%s\n' "${images[@]}" | jq -R . | jq -s .)" '{image: $arr}')"
+            echo "matrix=$json" >> "$GITHUB_OUTPUT"
+          fi
+
+  prepare-base:
+    needs: detect
+    if: needs.detect.outputs.has_changes == 'true'
+    runs-on: ubuntu-latest
+    env:
+      CI: 'true'
+      PUSH_IMAGE: 'false'
+      DOCKER_REGISTRY_URL: 'ci'
+      DOCKER_LOGIN: 'build'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Prepare oscript base image
+        run: |
+          set -euo pipefail
+          if [[ '${{ needs.detect.outputs.base_changed }}' == 'true' ]]; then
+            # База изменилась — собираем из PR-кода; downstream соберётся поверх неё
+            export OSCRIPT_VERSION=stable
+            ./src/build-oscript.sh
+          else
+            # База не менялась — берём публичную и ретегаем под CI-имя
+            docker pull sleemp/oscript:stable
+            docker tag sleemp/oscript:stable ci/build/oscript:stable
+          fi
+
+      - name: Prepare yard base (нужна для onec-installer-downloader)
+        if: contains(needs.detect.outputs.matrix, '"oid"')
+        run: |
+          set -euo pipefail
+          if [[ '${{ needs.detect.outputs.base_changed }}' == 'true' ]]; then
+            # База менялась — yard уже собран на свежем oscript выше
+            ./src/build-yard.sh
+          else
+            docker pull sleemp/yard:latest
+            docker tag sleemp/yard:latest ci/build/yard:latest
+          fi
+
+  build:
+    needs: [detect, prepare-base]
+    if: needs.detect.outputs.has_changes == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.detect.outputs.matrix) }}
+    env:
+      CI: 'true'
+      PUSH_IMAGE: 'false'
+      DOCKER_REGISTRY_URL: 'ci'
+      DOCKER_LOGIN: 'build'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build and test ${{ matrix.image }} (no push)
+        run: |
+          set -euo pipefail
+          case '${{ matrix.image }}' in
+            oscript)
+              export OSCRIPT_VERSION=stable
+              ./src/build-oscript.sh
+              ;;
+            oid)
+              export ONEC_INSTALLER_DOWNLOADER_VERSION=ci-test
+              ./src/build-onec-installer-downloader.sh
+              ;;
+            *)
+              ./src/build-${{ matrix.image }}.sh
+              ;;
+          esac
