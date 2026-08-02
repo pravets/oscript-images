@@ -34,7 +34,7 @@ test_winow_is_running() {
 test_winow_is_responsible() {
   log_header "Test :: winow is responsible"
 
-  local expected actual
+  local expected actual i
   local container_name="winow_test_responsible_$(date +%s)"
 
   expected="hello"
@@ -45,8 +45,16 @@ test_winow_is_responsible() {
     -v "${SCRIPT_DIR}/../tests/winow/hello:/app" \
     -d \
     ${DOCKER_REGISTRY_URL}/${DOCKER_LOGIN}/winow:latest > /dev/null 2>&1
-  sleep 5
-  
+
+  # Ждём пока контейнер ответит (до 30 секунд) вместо sleep 5 —
+  # на медленных раннерах контейнер может стартовать дольше, и curl вернёт пустой ответ
+  for i in $(seq 1 30); do
+    if curl -s http://localhost:3333/ > /dev/null 2>&1; then
+      break
+    fi
+    sleep 1
+  done
+
   actual=$(curl -s http://localhost:3333/)
 
   if assert_eq "$expected" "$actual"; then
