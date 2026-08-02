@@ -1,1 +1,7 @@
+.git
+.github
+README.md
+tests
+tools
+scripts
 .env
