@@ -1,5 +1,6 @@
 # oscript-images
 
+![CI](https://github.com/pravets/oscript-images/actions/workflows/ci.yml/badge.svg)
 ![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/pravets/oscript-images?utm_source=oss&utm_medium=github&utm_campaign=pravets%2Foscript-images&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)
 ![License](https://img.shields.io/github/license/pravets/oscript-images)
 [![Telegram](https://telegram-badge.vercel.app/api/telegram-badge?channelId=@pravets_IT)](https://t.me/+GKGRmAwghxllYzIy)
@@ -17,6 +18,7 @@
 
 - [oscript-images](#oscript-images)
 - [Подготовительные шаги](#подготовительные-шаги)
+- [Проверка сборки в Pull Request](#проверка-сборки-в-pull-request)
 - [oscript](#oscript)
 - [yard](#yard)
 - [onec-installer-downloader](#onec-installer-downloader)
@@ -37,6 +39,32 @@
      - `DOCKER_REGISTRY_URL` — адрес реестра (например, `docker.io`)
      - `DOCKER_LOGIN` — ваш логин Docker Hub или в вашем приватном registry
      - `DOCKER_PASSWORD` — ваш пароль от вашего приватного registry или [токен Docker Hub](https://app.docker.com/settings/personal-access-tokens). Для Docker Hub нужны права Read и Write и рекомендуется использовать токен, вместо пароля.
+
+    [↑ В начало](#oscript-images)
+
+## Проверка сборки в Pull Request
+
+Каждый PR автоматически собирает и тестирует только те образы, чьи файлы изменились — без публикации в registry и без необходимости в секретах. Это позволяет ловить поломки сборки до мержа.
+
+| Изменённые файлы | Какие образы собираются |
+|---|---|
+| `src/oscript/**`, `src/build-oscript.sh`, `tests/test-oscript.sh` | **Все** (oscript — база, регрессия downstream обязательна) |
+| `src/yard/**`, `src/build-yard.sh`, `tests/test-yard.sh` | yard |
+| `src/onec-installer-downloader/**`, `src/build-onec-installer-downloader.sh`, `tests/test-onec-installer-downloader.sh` | onec-installer-downloader |
+| `src/winow/**`, `src/build-winow.sh`, `tests/test-winow.sh`, `tests/winow/**` | winow |
+| `src/gitrules/**`, `src/build-gitrules.sh`, `tests/test-gitrules.sh` | gitrules |
+| `src/stebi/**`, `src/build-stebi.sh`, `tests/test-stebi.sh` | stebi |
+| `src/edt-ripper/**`, `src/build-edt-ripper.sh`, `tests/test-edt-ripper.sh` | edt-ripper |
+| `scripts/**`, `tools/**`, `.github/workflows/ci.yml` | **Все** (общая инфраструктура) |
+| `README.md`, `LICENSE`, `src/tag-*.sh` | Ничего (workflow не запускается) |
+
+Если изменилась база `oscript`, она собирается из кода PR, и все downstream-образы пересобираются поверх неё. В остальных случаях база берётся из публичного registry (`sleemp/oscript:stable`), чтобы изолировать проверку именно изменённого образа.
+
+Для локального прогона без публикации используйте:
+
+```bash
+PUSH_IMAGE=false DOCKER_REGISTRY_URL=ci DOCKER_LOGIN=build OSCRIPT_VERSION=stable CI=true ./src/build-oscript.sh
+```
 
     [↑ В начало](#oscript-images)
 
