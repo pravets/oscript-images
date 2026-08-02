@@ -96,10 +96,15 @@ jobs:
             echo "matrix=$json" >> "$GITHUB_OUTPUT"
           fi
 
-  prepare-base:
+  # Собирает базу oscript из кода PR, если она изменилась, и передаёт её
+  # build-джобам через artifact (джобы выполняются на изолированных раннерах,
+  # образы между ними не переживают). Всегда запускается — иначе outputs
+  # недоступны в build.
+  build-base:
     needs: detect
-    if: needs.detect.outputs.has_changes == 'true'
     runs-on: ubuntu-latest
+    outputs:
+      base_ready: ${{ steps.build.outputs.base_ready }}
     env:
       CI: 'true'
       PUSH_IMAGE: 'false'
@@ -109,35 +114,35 @@ jobs:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3
         with:
-          driver: docker  # docker-container (по умолчанию) не видит локальные образы из демона
+          driver: docker  # docker-container не видит локальные образы из демона
 
-      - name: Prepare oscript base image
+      - name: Build oscript and yard from PR code
+        id: build
+        if: needs.detect.outputs.base_changed == 'true'
         run: |
           set -euo pipefail
-          if [[ '${{ needs.detect.outputs.base_changed }}' == 'true' ]]; then
-            # База изменилась — собираем из PR-кода; downstream соберётся поверх неё
-            export OSCRIPT_VERSION=stable
-            ./src/build-oscript.sh
-          else
-            # База не менялась — берём публичную и ретегаем под CI-имя
-            docker pull sleemp/oscript:stable
-            docker tag sleemp/oscript:stable ci/build/oscript:stable
-          fi
+          export OSCRIPT_VERSION=stable
+          ./src/build-oscript.sh
+          # yard нужен onec-installer-downloader'у как база — собираем и его
+          ./src/build-yard.sh
+          mkdir -p /tmp/base
+          docker save ci/build/oscript:stable ci/build/yard:latest | gzip > /tmp/base/base-images.tar.gz
+          echo 'base_ready=true' >> "$GITHUB_OUTPUT"
 
-      - name: Prepare yard base (нужна для onec-installer-downloader)
-        if: contains(needs.detect.outputs.matrix, '"oid"')
-        run: |
-          set -euo pipefail
-          if [[ '${{ needs.detect.outputs.base_changed }}' == 'true' ]]; then
-            # База менялась — yard уже собран на свежем oscript выше
-            ./src/build-yard.sh
-          else
-            docker pull sleemp/yard:latest
-            docker tag sleemp/yard:latest ci/build/yard:latest
-          fi
+      - name: Mark base as not changed
+        if: needs.detect.outputs.base_changed != 'true'
+        run: echo 'base_ready=false' >> "$GITHUB_OUTPUT"
+
+      - name: Upload base images
+        if: needs.detect.outputs.base_changed == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: base-images
+          path: /tmp/base/base-images.tar.gz
+          retention-days: 1
 
   build:
-    needs: [detect, prepare-base]
+    needs: [detect, build-base]
     if: needs.detect.outputs.has_changes == 'true'
     runs-on: ubuntu-latest
     strategy:
@@ -152,7 +157,30 @@ jobs:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3
         with:
-          driver: docker  # docker-container (по умолчанию) не видит локальные образы из демона
+          driver: docker  # docker-container не видит локальные образы из демона
+
+      # Блок: не трогаем, если oscript в матрице — он собирает сам себя ниже
+      - name: Load PR-built base images
+        if: needs.build-base.outputs.base_ready == 'true' && matrix.image != 'oscript'
+        uses: actions/download-artifact@v4
+        with:
+          name: base-images
+          path: /tmp/base
+
+      - name: Import base images into docker
+        if: needs.build-base.outputs.base_ready == 'true' && matrix.image != 'oscript'
+        run: docker load < /tmp/base/base-images.tar.gz
+
+      - name: Pull public base images
+        if: needs.build-base.outputs.base_ready != 'true'
+        run: |
+          set -euo pipefail
+          docker pull sleemp/oscript:stable
+          docker tag sleemp/oscript:stable ci/build/oscript:stable
+          if [[ '${{ matrix.image }}' == 'oid' ]]; then
+            docker pull sleemp/yard:latest
+            docker tag sleemp/yard:latest ci/build/yard:latest
+          fi
 
       - name: Build and test ${{ matrix.image }} (no push)
         run: |
