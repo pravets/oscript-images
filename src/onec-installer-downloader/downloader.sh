@@ -143,6 +143,7 @@ download_distr() {
     --version-filter $ESCAPED_VERSION \
     --path /tmp/downloads \
     --distr-filter "$distr_filter" \
+    --get-beta-versions \
     --download-limit 1
 }
 
